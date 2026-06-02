@@ -1,0 +1,10 @@
+[package]
+name = "shell"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+hostname = "0.4"
+libc = "0.2"
+nix = { version = "0.31.3", features = ["process", "signal", "env"] }
+thiserror = "2.0.18"
