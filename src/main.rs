@@ -1,6 +1,8 @@
-use std::{env, io::{self, Write}, path::PathBuf};
+use std::{env, io::{self, Write}};
 
-use crate::builtin::{execute, is_builtin};
+use nix::unistd::{ROOT, Uid, gethostname};
+
+use crate::{builtin::{execute, is_builtin}, process::execute_line};
 
 pub mod builtin;
 pub mod parser;
@@ -13,14 +15,14 @@ fn main() {
     let Ok(user) = env::var("USER") else { return; };
 
     // Host
-    let Ok(host) = hostname::get() else { return; };
+    let Ok(host) = gethostname() else { return; };
     let Ok(host) = host.into_string() else { return; };
 
     
 
     // uid
-    let euid = unsafe { libc::geteuid() };
-    let shell_char = if euid == 0 { '#' } else { '$' };
+    let euid = Uid::effective();
+    let shell_char = if euid == ROOT { '#' } else { '$' };
 
     loop {
         let curr_dir = env::current_dir().unwrap();
@@ -36,23 +38,10 @@ fn main() {
                 continue;
             } 
         };
-        
-        let cmd = parsed_input.cmd();
-        let args = parsed_input.args();
-        if is_builtin(cmd) {
-            match execute(cmd, args) {
-                Ok(_) => {},
-                Err(e) => eprintln!("{e}"),
-            }
-        } else {
-            // Spawn child process 
-            match process::spawn(parsed_input) {
-                Ok(_) => {},
-                Err(e) => eprintln!("{e}"),
-            }
+
+        match execute_line(parsed_input) {
+            Ok(_) => {},
+            Err(e) => eprintln!("{e}"),
         }
-
-        
-
     }
 }
