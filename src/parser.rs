@@ -44,6 +44,14 @@ impl<'a> ParsedInput<'a> {
     pub fn iter(&self) -> impl Iterator<Item = &PipelineItem<'a>> {
         self.items.iter()
     }
+
+    pub fn len(&self) -> usize { 
+        self.items.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 }
 
 impl<'a> IntoIterator for ParsedInput<'a> {
